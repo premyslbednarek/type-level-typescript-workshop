@@ -8,7 +8,7 @@ import { Equal, Expect } from "../helpers";
  *    trafficLight is "green" and "stop" otherwise.
  */
 namespace one {
-  type Drive<trafficLight> = TODO;
+  type Drive<trafficLight> = trafficLight extends 'green' ? 'go' : 'stop';
 
   type res1 = Drive<"green">;
   type test1 = Expect<Equal<res1, "go">>;
@@ -27,18 +27,18 @@ namespace one {
  * 2. Implement a generic taking two union types and excluding one from the other.
  */
 namespace two {
-  type Exclude<union, excluded> = TODO;
+  type Exclude<union, excluded> = union extends excluded ? never : union; // when the type that is being checked is a union, each member of the union is treated separately
 
-  type res1 = Exclude<1 | 2 | 3, 1>;
+  type res1 = Exclude<1 | 2 | 3, 1>; // will result in never | 2 | 3
   type test1 = Expect<Equal<res1, 2 | 3>>;
 
-  type res2 = Exclude<1 | 2 | 3, 1 | 2>;
+  type res2 = Exclude<1 | 2 | 3, 1 | 2>; // result in never | never | 3
   type test2 = Expect<Equal<res2, 3>>;
 
-  type res3 = Exclude<1 | 2 | 3, never>;
+  type res3 = Exclude<1 | 2 | 3, never>; // results in 1 | 2 | 3
   type test3 = Expect<Equal<res3, 1 | 2 | 3>>;
 
-  type res4 = Exclude<1 | 2 | 3, unknown>;
+  type res4 = Exclude<1 | 2 | 3, unknown>; // results in never | never | never <=> never
   type test4 = Expect<Equal<res4, never>>;
 }
 
@@ -49,7 +49,7 @@ namespace bonus {
    *    assignable to `included`.
    */
   namespace three {
-    type Extract<union, included> = TODO;
+    type Extract<union, included> = union extends included ? union : never;
 
     // types used in unit tests:
 
