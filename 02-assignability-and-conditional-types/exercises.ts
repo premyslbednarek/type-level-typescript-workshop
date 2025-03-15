@@ -8,7 +8,7 @@ import { Equal, Expect } from "../helpers";
  *     - the third parameter if the first one is false
  */
 namespace one {
-  type If<condition extends boolean, branch1, branch2> = TODO;
+  type If<condition extends boolean, branch1, branch2> = condition extends true ? branch1 : branch2;
 
   type res1 = If<true, string, number>;
   type test1 = Expect<Equal<res1, string>>;
@@ -26,7 +26,7 @@ namespace one {
  *    property of an object type.
  */
 namespace two {
-  type GetTypeOfName<input> = TODO;
+  type GetTypeOfName<input> = input extends { name: any } ? input['name'] : never;
 
   type res1 = GetTypeOfName<{ name: "Gabriel" }>;
   type test1 = Expect<Equal<res1, "Gabriel">>;
@@ -49,7 +49,7 @@ namespace two {
  *    of a Promise.
  */
 namespace three {
-  type UnwrapPromise<input> = TODO;
+  type UnwrapPromise<input> = input extends Promise<infer T> ? T : "NOT A PROMISE";
 
   type res1 = UnwrapPromise<Promise<"Hello">>;
   type test1 = Expect<Equal<res1, "Hello">>;
@@ -67,7 +67,11 @@ namespace three {
  */
 namespace four {
   type Color = "red" | "green" | "blue" | "white";
-  type GetHexColor<color extends Color> = TODO;
+  type GetHexColor<color extends Color> =
+      color extends "red"   ? "#ff0000"
+    : color extends "green" ? "#00ff00"
+    : color extends "blue"  ? "#0000ff"
+    :                         "#ffffff"
 
   type res1 = GetHexColor<"red">;
   type test1 = Expect<Equal<res1, "#ff0000">>;
@@ -88,7 +92,7 @@ namespace four {
  *    the default type.
  */
 namespace five {
-  type SafeGet<obj, key, defaultType> = TODO;
+  type SafeGet<obj, key, defaultType> = key extends keyof obj ? obj[key] : defaultType;
 
   type res1 = SafeGet<{ name: "Gabriel" }, "name", "Anonymous">;
   type test1 = Expect<Equal<res1, "Gabriel">>;
@@ -119,7 +123,7 @@ namespace bonus {
    * Hint: a type constraint will be useful!
    */
   namespace six {
-    type Get<obj, key> = TODO;
+    type Get<obj, key extends keyof obj> = obj[key];
 
     type res1 = Get<{ age: number }, "age">;
     type test1 = Expect<Equal<res1, number>>;
@@ -132,7 +136,7 @@ namespace bonus {
       // This parameter shouldn't be allowed because
       // this object doesn't contain a `age_of_the_captain`.
       // ⚠️ Uncomment the ts-expect-error bellow:
-      // // @ts-expect-error
+      // @ts-expect-error
       "age_of_the_captain"
     >;
   }
@@ -148,7 +152,7 @@ namespace bonus {
    *       in a tuple type (pattern matching).
    */
   namespace seven {
-    type XOR<bool1, bool2> = TODO;
+    type XOR<bool1, bool2> = [bool1, bool2] extends [true, false] | [false, true] ? true : false;
 
     type res1 = XOR<true, true>;
     type t1 = Expect<Equal<res1, false>>;
