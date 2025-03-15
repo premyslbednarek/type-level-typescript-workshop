@@ -10,7 +10,7 @@ namespace one {
   type Vertical = "top" | "center" | "bottom";
   type Horizontal = "left" | "center" | "right";
 
-  type Position = TODO;
+  type Position = `${Vertical}-${Horizontal}`;
 
   const Button = ({ position }: { position: Position }) =>
     `<button class="${position}">my button</button>`;
@@ -33,7 +33,7 @@ namespace one {
  * 2. Implement a generic extracting the first letter of a string.
  */
 namespace two {
-  type FirstLetter<word> = TODO;
+  type FirstLetter<word> = word extends `${infer First}${infer Rest}` ? First : ""; // looked this up
 
   type res1 = FirstLetter<"TYPE">;
   type test1 = Expect<Equal<res1, "T">>;
@@ -48,7 +48,7 @@ namespace two {
  * Hint: The first word is before the first space.
  */
 namespace three {
-  type UppercaseFirstWord<word> = TODO;
+  type UppercaseFirstWord<word> = word extends `${infer firstWord} ${infer rest}` ? `${Uppercase<firstWord>} ${rest}` : ""; // Uppercase<...> wow!
 
   type res1 = UppercaseFirstWord<"types are cool">;
   type test1 = Expect<Equal<res1, "TYPES are cool">>;
@@ -62,7 +62,7 @@ namespace bonus {
    * 4. Implement a generic removing the first letter of a string.
    */
   namespace four {
-    type EndOfWord<word> = TODO;
+    type EndOfWord<word> = word extends `${infer first}${infer rest}` ? rest : "";
 
     type res1 = EndOfWord<"TYPE">;
     type test1 = Expect<Equal<res1, "YPE">>;
@@ -75,7 +75,10 @@ namespace bonus {
    * 5. Implement a generic extracting the first folder of a unix path.
    */
   namespace five {
-    type GetFirstFolder<path> = TODO;
+    type GetFirstFolder<path> =
+        path extends `/${infer first}/${infer rest}` ? first
+      : path extends `/${infer first}` ? first
+      : path extends `${infer first}/${infer rest}` ? first : ""
 
     type res1 = GetFirstFolder<"/test">;
     type test1 = Expect<Equal<res1, "test">>;
