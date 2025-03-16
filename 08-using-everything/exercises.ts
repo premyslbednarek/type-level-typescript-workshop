@@ -9,7 +9,11 @@ import { Compute, Equal, Expect } from "../helpers";
  *    Parameters start by `:` and end at the next `/`.
  */
 namespace one {
-  type ExtractUrlParamNames<url> = TODO;
+  type ExtractUrlParamNames<url> = url extends `${string}:${infer param}/${infer rest}`
+    ? param | ExtractUrlParamNames<rest>
+    : url extends `${string}:${infer param}`
+      ? param
+      : never
 
   type res1 = ExtractUrlParamNames<"/user/:username">;
   type test1 = Expect<Equal<res1, "username">>;
@@ -27,10 +31,16 @@ namespace one {
  *    the type of url parameters as an object type.
  */
 namespace two {
-  type ExtractUrlParams<url> = TODO;
+  export type ExtractUrlParams<url extends string> = url extends `${infer _}:${infer param}/${infer rest}`
+    ? { [k in param | keyof ExtractUrlParams<rest>]: string}
+    : url extends `${infer _}:${infer param}`
+      ? { [k in param]: string }
+      : { }
 
   type res1 = ExtractUrlParams<"/user/:username">;
   type test1 = Expect<Equal<Compute<res1>, { username: string }>>;
+
+  type A = ExtractUrlParams<"/:dashboard">
 
   type res2 = ExtractUrlParams<"/user/:username/post/:postId">;
   type test2 = Expect<
@@ -47,7 +57,10 @@ namespace bonus {
    *
    */
   namespace three {
-    type ExtractUrlParams<url> = TODO;
+    export type ExtractUrlParams<url extends string> =
+      url extends `${infer begin}(${infer optionalPart})${infer end}`
+        ? { [key in keyof ExtractUrlParams<optionalPart>]?: string } & two.ExtractUrlParams<begin> & ExtractUrlParams<end>
+        : two.ExtractUrlParams<url>
 
     type res3 = ExtractUrlParams<"/dashboard(/:dashboardId)">;
     type test3 = Expect<Equal<Compute<res3>, { dashboardId?: string }>>;
@@ -71,7 +84,7 @@ namespace bonus {
    *    to make sure the `params` object is correct!
    */
   namespace four {
-    function createURL(url: TODO, params: TODO) {}
+    function createURL<T extends string>(url: T, params: three.ExtractUrlParams<T>) {}
 
     createURL("org/:orgId/dashboard(/:dashboardId)", { orgId: "2" });
     createURL("org/:orgId/dashboard(/:dashboardId)", {
@@ -105,8 +118,16 @@ namespace bonus {
   namespace five {
     type todaysSecretWord = "READY";
 
-    type Wordle<str> = TODO;
+    type Wordle<str, word = todaysSecretWord> =
+      [str, word] extends [`${infer guessedLetter}${infer guessedTail}`, `${infer wordLetter}${infer wordTail}`]
+      ? guessedLetter extends wordLetter
+        ? ` 🟩 ${Wordle<guessedTail, wordTail>}`
+        : todaysSecretWord extends `${infer _}${guessedLetter}${infer _}` // looked this part up
+          ? ` 🟨 ${Wordle<guessedTail, wordTail>}`
+          : ` _ ${Wordle<guessedTail, wordTail>}`
+      : ""
 
+    // two spaces between the symbols threw me off
     type res1 = Wordle<"POINT">;
     type test1 = Expect<Equal<res1, " _  _  _  _  _ ">>;
 

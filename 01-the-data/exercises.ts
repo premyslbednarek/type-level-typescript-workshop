@@ -6,7 +6,7 @@ import { Equal, Expect } from "../helpers";
  * 1. implement a generic to get the union of all keys of an object type.
  */
 namespace one {
-  type KeyOf<obj> = TODO;
+  type KeyOf<obj> = keyof obj;
 
   type res1 = KeyOf<{ a: number; b: string }>;
   type test1 = Expect<Equal<res1, "a" | "b">>;
@@ -25,7 +25,7 @@ namespace one {
  * 2. implement a generic to get the union of all values in an object type.
  */
 namespace two {
-  type ValueOf<obj> = TODO;
+  type ValueOf<obj> = obj[keyof obj];
 
   type res1 = ValueOf<{ a: number; b: string }>;
   type test1 = Expect<Equal<res1, number | string>>;
@@ -49,7 +49,7 @@ namespace three {
    * It makes sure the `tuple` type parameter will always be assignable
    * to `any[]`. We will cover assignability in depth in the next chapter.
    */
-  type ValueOf<tuple extends any[]> = TODO;
+  type ValueOf<tuple extends any[]> = tuple[number];
 
   type res1 = ValueOf<[number, string]>;
   type test1 = Expect<Equal<res1, number | string>>;
@@ -75,7 +75,7 @@ namespace bonus {
    *       The type level version is very similar :)
    */
   namespace four {
-    type Length<tuple extends any[]> = TODO;
+    type Length<tuple extends any[]> = tuple['length'];
 
     type res1 = Length<[]>;
     type test1 = Expect<Equal<res1, 0>>;

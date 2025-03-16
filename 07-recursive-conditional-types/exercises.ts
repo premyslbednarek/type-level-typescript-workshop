@@ -6,7 +6,7 @@ import { Equal, Expect, Tuple } from "../helpers";
  * 1. Implement a Reverse type that takes a tuple and reverses it.
  */
 namespace one {
-  type Reverse<tuple extends any[]> = TODO;
+  type Reverse<tuple extends any[]> = tuple extends [infer First, ...infer Rest] ? [...Reverse<Rest>, First] : [];
 
   type res1 = Reverse<[1, 2, 3, 4]>;
   type test1 = Expect<Equal<res1, [4, 3, 2, 1]>>;
@@ -30,7 +30,13 @@ namespace one {
  * using recursion?
  */
 namespace two {
-  type Every<tuple extends any[]> = TODO;
+  // type Every<tuple extends any[]> =
+  //   tuple extends [infer First, ...infer Rest]
+  //     ? First extends true ? Every<Rest> : false
+  //     : true /* empty tuple */;
+
+  // alternative without recursion
+  type Every<tuple extends any[]> = false extends tuple[number] ? false : true;
 
   type res1 = Every<[true, false, false]>;
   type test1 = Expect<Equal<res1, false>>;
@@ -53,7 +59,7 @@ namespace two {
  * return `number`.
  */
 namespace three {
-  type UnwrapPromise<input> = TODO;
+  type UnwrapPromise<input> = input extends Promise<infer T> ? UnwrapPromise<T> : input;
 
   type res1 = UnwrapPromise<"NOT A PROMISE">;
   type test1 = Expect<Equal<res1, "NOT A PROMISE">>;
@@ -78,7 +84,12 @@ namespace bonus {
    * using recursion?
    */
   namespace four {
-    type Some<tuple extends any[]> = TODO;
+    // type Some<tuple extends any[]> = true extends tuple[number] ? true : false;
+
+    type Some<tuple extends any[]> =
+      tuple extends [infer first, ...infer rest]
+        ? first extends true ? true : Some<rest>
+        : false
 
     type res1 = Some<[true, false, false]>;
     type test1 = Expect<Equal<res1, true>>;
@@ -101,7 +112,7 @@ namespace bonus {
    * should return `[number, string, boolean]`.
    */
   namespace five {
-    type All<promises extends Array<any>> = TODO;
+    type All<promises extends Array<any>> = promises extends [Promise<infer t>, ...infer tail] ? [t, ...All<tail>] : []
 
     type res1 = All<[Promise<number>]>;
     type test1 = Expect<Equal<res1, [number]>>;
@@ -136,7 +147,12 @@ namespace bonus {
    * Hint: you will need to use a Template Literal Type!
    */
   namespace six {
-    type SnakeToCamelCase<word> = TODO;
+    type SnakeToPascalCase<word> =
+      word extends `${infer first}_${infer rest}` ? `${Capitalize<first>}${SnakeToPascalCase<rest>}`
+    : word extends `${infer word_without_underscore}` ? Capitalize<word_without_underscore> : "";
+
+    export type SnakeToCamelCase<word> =
+      word extends `${infer firstWord}_${infer rest}` ? `${firstWord}${SnakeToPascalCase<rest>}` : word;
 
     type res1 = SnakeToCamelCase<"hello">;
     type test1 = Expect<Equal<res1, "hello">>;
@@ -157,7 +173,7 @@ namespace bonus {
    *  - You don't need a recursion to solve this one.
    */
   namespace seven {
-    type CamelizeKeys<obj> = TODO;
+    type CamelizeKeys<obj> = { [Key in keyof obj as six.SnakeToCamelCase<Key>]: obj[Key] };
 
     type res1 = CamelizeKeys<{ age: number; first_name: string }>;
     type test1 = Expect<Equal<res1, { age: number; firstName: string }>>;

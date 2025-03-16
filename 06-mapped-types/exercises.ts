@@ -8,7 +8,7 @@ import { Equal, Expect } from "../helpers";
  * Hint: you will need to use the optional key syntax (key?: value).
  */
 namespace one {
-  type Partial<obj> = TODO;
+  type Partial<obj> = { [key in keyof obj]?: obj[key] };
 
   type res1 = Partial<{ a: string }>;
   type test1 = Expect<Equal<res1, { a?: string }>>;
@@ -31,7 +31,7 @@ namespace one {
  * Hint: You will need to add a type constraint on one type parameter.
  */
 namespace two {
-  type Pick<obj, keys> = TODO;
+  type Pick<obj, keys extends keyof obj> = { [Key in keys]: obj[Key]};
 
   type res1 = Pick<{ a: string; b: string; c: string }, "a">;
   type test1 = Expect<Equal<res1, { a: string }>>;
@@ -50,7 +50,9 @@ namespace two {
  * Hint: you will need to use the `as` syntax to rename keys.
  */
 namespace three {
-  type BuildGetters<obj> = TODO;
+  // First thought: I've seen this in the typescript handbook!
+  // still could not figure the '& string' out :(
+  type BuildGetters<obj> = { [k in keyof obj & string as `get_${k}`]: () => obj[k]};
 
   type res1 = BuildGetters<{ id: string }>;
   type test1 = Expect<Equal<res1, { get_id: () => string }>>;
@@ -75,7 +77,7 @@ namespace bonus {
    *       don't need to import it.
    */
   namespace four {
-    type Omit<obj, keys> = TODO;
+    type Omit<obj, keys> = { [Key in Exclude<keyof obj, keys>]: obj[Key]};
 
     type res1 = Omit<{ a: string; b: string; c: string }, "a">;
     type test1 = Expect<Equal<res1, { b: string; c: string }>>;
@@ -95,7 +97,8 @@ namespace bonus {
    * if that makes the code easier to understand.
    */
   namespace five {
-    type OmitByValue<obj, value> = TODO;
+    type OmmitedKeys<obj, value> = { [Key in keyof obj]: obj[Key] extends value ? never : Key }[keyof obj]
+    type OmitByValue<obj, value> = { [Key in OmmitedKeys<obj, value>]: obj[Key] };
 
     type User = {
       name: string;
@@ -125,7 +128,7 @@ namespace bonus {
    * Hints: You will need to use the `as` keyword and a Template Literal Type
    */
   namespace six {
-    type LowercaseKeys<obj> = TODO;
+    type LowercaseKeys<obj> = { [k in keyof obj & string as `${Lowercase<k>}`]: obj[k]};
 
     type res1 = LowercaseKeys<{ AGE: number; FIRSTNAME: string }>;
     type test1 = Expect<Equal<res1, { age: number; firstname: string }>>;
